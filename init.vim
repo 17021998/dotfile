@@ -1,5 +1,4 @@
 call plug#begin()
-Plug 'terryma/vim-multiple-cursors'
 " FZF for searching around
 Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --bin' }
 Plug 'junegunn/fzf.vim'
@@ -36,9 +35,6 @@ call plug#end()
 
 filetype plugin indent on
 
-" Auto remove trailing spaces
-autocmd BufWritePre * %s/\s\+$//e
-
 set hidden
 set nobackup
 set nowritebackup
@@ -58,7 +54,6 @@ set ttimeout
 set ttimeoutlen=10
 set termguicolors
 set ignorecase
-
 
 " Map Emacs like movement in Insert mode
 inoremap <C-n> <Down>
@@ -108,6 +103,7 @@ set smartindent
 
 map mm <Plug>NERDCommenterToggle
 
+
 map /  <Plug>(incsearch-forward)
 map ?  <Plug>(incsearch-backward)
 map g/ <Plug>(incsearch-stay)
@@ -131,13 +127,16 @@ nnoremap <Leader>sr :so .work<CR>
 nnoremap <Leader><Leader>r :so ~/.config/nvim/init.vim<CR>
 nnoremap <Leader>n :NERDTree<CR>
 nnoremap <Leader>f :NERDTreeFind<CR>
+nnoremap <Leader>nc :NERDTree
 nnoremap <Leader><Leader>o :Vista coc<CR>
 nnoremap <C-o> :CocList outline<CR>
+
 "Buffer
 nnoremap <Leader>tn :tabn<CR>
 nnoremap <Leader>tp :tabp<CR>
 nnoremap <Leader>tc :tabe<CR>
 nnoremap <Leader>tx :tabclose<CR>
+
 " Git
 nnoremap <Leader>ggn :GitGutterNextHunk<CR>
 nnoremap <Leader>ggp :GitGutterPrevHunk<CR>
@@ -159,7 +158,11 @@ function! DeleteCurrentFileAndBuffer()
 endfunction
 
 function! NearestMethodOrFunction() abort
-  return get(b:, 'vista_nearest_method_or_function', '')
+  let l:method = get(b:, 'vista_nearest_method_or_function', '')
+  if l:method != ''
+    let l:method = '[' . l:method . ']'
+  endif
+  return l:method
 endfunction
 
 function! DrawGitBranchInfo()
@@ -202,9 +205,10 @@ function! LightLineFilename()
   return name
 endfunction
 
+set statusline+=%{NearestMethodOrFunction()}
 " Use auocmd to force lightline update.
 autocmd User CocStatusChange,CocDiagnosticChange call lightline#update()
-autocmd VimEnter * call vista#RunForNearestMethodOrFunction()
+ "autocmd VimEnter * call vista#RunForNearestMethodOrFunction()
 
 set shortmess+=c
 set signcolumn=yes
@@ -334,4 +338,39 @@ set termguicolors
 let &t_8f = "\<Esc>[38;2;%lu;%lu;%lum"
 let &t_8b = "\<Esc>[48;2;%lu;%lu;%lum"
 
+function! OpenFloatTerm()
+  let height = float2nr((&lines-2)/1.5)
+  let row = float2nr((&lines - height) / 2)
+  let width = float2nr(&columns / 1.5)
+  let col = float2nr((&columns - width) / 2)
+  "Border window
+  let border_opts = {
+        \'relative':'editor',
+        \'row': row -1,
+        \'col' : col-2,
+        \'width': width + 4,
+        \'height': height + 2,
+        \'style': 'minimal'
+        \}
+  let border_buf = nvim_create_buf(0, 1)
+  let s:border_win = nvim_open_win(border_buf, 1, border_opts)
+  "Main
+  let opts = {
+        \'relative':'editor',
+        \'row' : row,
+        \'col':col,
+        \'width': width,
+        \'height': height,
+        \'style':'minimal'
+        \}
+  let buf = nvim_create_buf(0 ,1)
+  let win = nvim_open_win(buf, 1, opts)
+  terminal
+  startinsert
+
+  autocmd TermClose * ++once :q | call nvim_win_close(s:border_win, 1)
+endfunction
+
+" Float Terminal
+nnoremap <Leader>t :call OpenFloatTerm()
 
