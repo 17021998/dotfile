@@ -1,6 +1,6 @@
 call plug#begin()
 " FZF for searching around
-Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --bin' }
+Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }
 Plug 'junegunn/fzf.vim'
 " Some Git stuff
 Plug 'airblade/vim-gitgutter'
@@ -8,7 +8,7 @@ Plug 'tpope/vim-fugitive'
 " EditorConfig
 Plug 'editorconfig/editorconfig-vim'
 " Execute code in current buffer
-Plug 'huytd/vim-quickrun'
+" Plug 'huytd/vim-quickrun'
 " Language support things
 Plug 'sheerun/vim-polyglot'
 Plug 'rust-lang/rust.vim'
@@ -18,8 +18,15 @@ Plug 'neoclide/coc.nvim', {'branch': 'release'}
 Plug 'scrooloose/nerdtree'
 Plug 'jistr/vim-nerdtree-tabs'
 Plug 'itchyny/lightline.vim'
-Plug 'arcticicestudio/nord-vim'
-" Auto root folder switcher
+Plug 'chuling/equinusocio-material.vim'
+Plug 'gruvbox-community/gruvbox'
+Plug 'colepeters/spacemacs-theme.vim'
+Plug 'sainnhe/gruvbox-material'
+Plug 'leafgarland/typescript-vim'
+Plug 'peitalin/vim-jsx-typescript'
+Plug 'styled-components/vim-styled-components', { 'branch': 'main' }
+"Plug 'jparise/vim-graphq'
+Plug 'pangloss/vim-javascript'
 Plug 'airblade/vim-rooter'
 " Moving around easier
 Plug 'easymotion/vim-easymotion'
@@ -31,9 +38,12 @@ Plug 'tpope/vim-abolish' " For case perserved subtitue :%S
 Plug 'scrooloose/nerdcommenter'
 " Display source outline
 Plug 'liuchengxu/vista.vim'
+Plug 'mattn/emmet-vim'
 call plug#end()
 
 filetype plugin indent on
+
+set runtimepath^=~/AppData/Local/nvim/plugged/ctrlp.vim
 
 set hidden
 set nobackup
@@ -55,22 +65,48 @@ set ttimeoutlen=10
 set termguicolors
 set ignorecase
 
-" Map Emacs like movement in Insert mode
-inoremap <C-n> <Down>
-inoremap <C-p> <Up>
-inoremap <C-e> <C-o>$
-inoremap <C-a> <C-o>0
-
-" Remap scrolling
-nnoremap <C-k> <C-u>
-nnoremap <C-j> <C-d>
-
 set background=dark
 let g:nord_bold=0
 let g:nord_italic=1
 let g:nord_italic_comments=1
 let g:nord_uniform_diff_background=1
-colorscheme nord
+
+" colorscheme gruvbox
+let g:gruvbox_contrast_dark = 'hard'
+if exists('+termguicolors')
+    let &t_8f = "\<Esc>[38;2;%lu;%lu;%lum"
+    let &t_8b = "\<Esc>[48;2;%lu;%lu;%lum"
+endif
+let g:gruvbox_invert_selection='0'
+
+let g:equinusocio_material_style = 'pure'
+let g:equinusocio_material_less = 50
+set fillchars+=vert:│
+colorscheme equinusocio_material
+let g:airline_theme = 'equinusocio_material'
+
+" --- vim go (polyglot) settings.
+let g:go_highlight_build_constraints = 1
+let g:go_highlight_extra_types = 1
+let g:go_highlight_fields = 1
+let g:go_highlight_functions = 1
+let g:go_highlight_methods = 1
+let g:go_highlight_operators = 1
+let g:go_highlight_structs = 1
+let g:go_highlight_types = 1
+let g:go_highlight_function_parameters = 1
+let g:go_highlight_function_calls = 1
+let g:go_highlight_generate_tags = 1
+let g:go_highlight_format_strings = 1
+let g:go_highlight_variable_declarations = 1
+let g:go_auto_sameids = 1
+
+autocmd BufEnter *.{js,jsx,ts,tsx} :syntax sync fromstart
+autocmd BufLeave *.{js,jsx,ts,tsx} :syntax sync clear
+
+if executable('rg')
+    let g:rg_derive_root='true'
+endif
 
 " Some custom style
 highlight EasyMotionTargetDefault guifg=#ffb400
@@ -82,6 +118,11 @@ endif
 set listchars=eol:¬,tab:>·,trail:~,extends:>,precedes:<,space:·
 set list
 
+let g:netrw_browse_split = 2
+let g:netrw_banner = 0
+let g:netrw_winsize = 25
+
+
 let $FZF_DEFAULT_COMMAND='rg --files --hidden --follow --glob "!.git/*"'
 let $FZF_DEFAULT_OPTS = '-m --bind ctrl-a:select-all,ctrl-d:deselect-all,ctrl-t:toggle-all --color fg:#D8DEE9,bg:#2E3440,hl:#A3BE8C,fg+:#D8DEE9,bg+:#434C5E,hl+:#A3BE8C --color pointer:#BF616A,info:#434C5E,spinner:#434C5E,header:#434C5E,prompt:#81A1C1,marker:#EBCB8B'
 
@@ -92,9 +133,9 @@ nnoremap \ :Find<SPACE>
 set backspace=eol,start,indent
 set whichwrap+=<,>,h,l
 
-set tabstop=2
-set softtabstop=2
-set shiftwidth=2
+set tabstop=4
+set softtabstop=4
+set shiftwidth=4
 set shiftround
 set expandtab
 
@@ -171,7 +212,7 @@ function! DrawGitBranchInfo()
 endfunction
 
 let g:lightline = {
-      \ 'colorscheme': 'nord',
+      \ 'colorscheme': 'equinusocio_material',
       \ 'active': {
       \   'left': [ [ 'mode', 'paste' ], [ 'cocstatus' ], [ 'filename', 'nearmethod' ] ],
       \   'right': [ [ 'icongitbranch', 'percent', 'lineinfo', 'filetype' ] ]
@@ -238,23 +279,6 @@ nmap <silent> gy <Plug>(coc-type-definition)
 nmap <silent> gi <Plug>(coc-implementation)
 nmap <silent> gr <Plug>(coc-references)
 
-" Use K to show documentation in preview window
-nnoremap <silent> K :call <SID>show_documentation()<CR>
-
-" Use L to highlight the symbol under the cursor
-nnoremap <silent> L :call CocActionAsync('highlight')<CR>
-
-function! s:show_documentation()
-  if (index(['vim','help'], &filetype) >= 0)
-    execute 'h '.expand('<cword>')
-  else
-    call CocAction('doHover')
-  endif
-endfunction
-
-" Highlight symbol under cursor on CursorHold
-autocmd CursorHold * silent call CocActionAsync('highlight')
-
 " Use `:Fold` to fold current buffer
 command! -nargs=? Fold :call     CocAction('fold', <f-args>)
 
@@ -305,31 +329,6 @@ function! s:select_current_word()
   return "*\<Plug>(coc-cursors-word):nohlsearch\<CR>"
 endfunc
 
-" Show the style name of thing under the cursor
-" Shamelessly taken from https://github.com/tpope/vim-scriptease
-function! FaceNames(...) abort
-  if a:0
-    let [line, col] = [a:1, a:2]
-  else
-    let [line, col] = [line('.'), col('.')]
-  endif
-  return reverse(map(synstack(line, col), 'synIDattr(v:val,"name")'))
-endfunction
-
-function! DescribeFace(count) abort
-  if a:count
-    let name = get(FaceNames(), a:count-1, '')
-    if name !=# ''
-      return 'syntax list '.name
-    endif
-  else
-    echo join(FaceNames(), ' ')
-  endif
-  return ''
-endfunction
-
-nnoremap zs :<C-U>exe DescribeFace(v:count)<CR>
-
 " Auto change root of the project
 let g:rooter_change_directory_for_non_project_files = 'current'
 let g:rooter_patterns = ['Cargo.tom', 'package.json', '.git/']
@@ -338,39 +337,28 @@ set termguicolors
 let &t_8f = "\<Esc>[38;2;%lu;%lu;%lum"
 let &t_8b = "\<Esc>[48;2;%lu;%lu;%lum"
 
-function! OpenFloatTerm()
-  let height = float2nr((&lines-2)/1.5)
-  let row = float2nr((&lines - height) / 2)
-  let width = float2nr(&columns / 1.5)
-  let col = float2nr((&columns - width) / 2)
-  "Border window
-  let border_opts = {
-        \'relative':'editor',
-        \'row': row -1,
-        \'col' : col-2,
-        \'width': width + 4,
-        \'height': height + 2,
-        \'style': 'minimal'
-        \}
-  let border_buf = nvim_create_buf(0, 1)
-  let s:border_win = nvim_open_win(border_buf, 1, border_opts)
-  "Main
-  let opts = {
-        \'relative':'editor',
-        \'row' : row,
-        \'col':col,
-        \'width': width,
-        \'height': height,
-        \'style':'minimal'
-        \}
-  let buf = nvim_create_buf(0 ,1)
-  let win = nvim_open_win(buf, 1, opts)
-  terminal
-  startinsert
 
-  autocmd TermClose * ++once :q | call nvim_win_close(s:border_win, 1)
-endfunction
+let g:ctrlp_user_command = ['.git', 'cd %s && git ls-files']
+let g:ctrlp_user_command = ['.git', 'cd %s && git ls-files . -co --exclude-standard', 'find %s -type f']
+let g:ctrlp_user_command = ['.hg', 'hg --cwd %s locate -I .']
+let g:ctrlp_custom_ignore = '\v[\/]\.(git|hg|svn)$'
+let g:ctrlp_custom_ignore = {
+	\ 'dir':  '\v[\/]\.(git|hg|svn)$',
+	\ 'file': '\v\.(exe|so|dll)$',
+	\ 'link': 'SOME_BAD_SYMBOLIC_LINKS',
+	\ }
 
-" Float Terminal
-nnoremap <Leader>t :call OpenFloatTerm()
 
+let g:coc_global_extensions = [
+    \ 'coc-tsserver'
+    \]
+
+if isdirectory('./node_modules') && isdirectory('./node_modules/prettier')
+  let g:coc_global_extensions += ['coc-prettier']
+endif
+
+if isdirectory('./node_modules') && isdirectory('./node_modules/eslint')
+  let g:coc_global_extensions += ['coc-eslint']
+endif
+
+let g:user_emmet_leader_key=','
